@@ -17,7 +17,7 @@ from sklearn.metrics import (
 # =========================================================
 
 st.set_page_config(
-    page_title="AI Restaurant Intelligence Platform",
+    page_title="Food service Intelligence Platform",
     page_icon="",
     layout="wide"
 )
@@ -120,18 +120,17 @@ mape = np.mean(
 ) * 100
 
 accuracy = 100 - mape
-
-# =========================================================
+#=========================================================
 # HEADER
 # =========================================================
 
 st.markdown("""
 <div class='title'>
-AI Restaurant Intelligence Platform
+Food service Intelligence Platform
 </div>
 
 <div class='subtitle'>
-AI-Powered Restaurant Demand Forecasting & Inventory Optimization
+Empowering Restaurant with AI Driven Forecast
 </div>
 """, unsafe_allow_html=True)
 
@@ -310,10 +309,10 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "Dashboard",
     "Forecast",
     "Inventory",
-    "Analytics",
-    "AI Insights",
     "Forecast History",
-    "Admin Dashboard"
+    "Admin Dashboard",
+    "Branch Forecast",
+    "AI Chatbot"
 ])
 # =========================================================
 # DASHBOARD TAB
@@ -812,153 +811,10 @@ with tab3:
             """
         )
 # =========================================================
-# ANALYTICS TAB
-# =========================================================
-
-with tab4:
-
-    st.subheader("Advanced Business Analytics")
-
-    # =====================================================
-    # PROMOTION ANALYSIS
-    # =====================================================
-
-    promo = (
-        df.groupby('emailer_for_promotion')['num_orders']
-        .mean()
-        .reset_index()
-    )
-
-    fig6 = px.bar(
-        promo,
-        x='emailer_for_promotion',
-        y='num_orders',
-        title='Promotion Impact Analysis'
-    )
-
-    st.plotly_chart(fig6, use_container_width=True)
-
-    # =====================================================
-    # WEEKEND ANALYSIS
-    # =====================================================
-
-    weekend = (
-        df.groupby('weekend')['num_orders']
-        .mean()
-        .reset_index()
-    )
-
-    fig7 = px.bar(
-        weekend,
-        x='weekend',
-        y='num_orders',
-        title='Weekend vs Weekday Orders'
-    )
-
-    st.plotly_chart(fig7, use_container_width=True)
-
-    # =====================================================
-    # FEATURE IMPORTANCE
-    # =====================================================
-
-    importance_df = pd.DataFrame({
-
-        'Feature': model.feature_names_in_,
-        'Importance': model.feature_importances_
-
-    })
-
-    importance_df = importance_df.sort_values(
-        by='Importance',
-        ascending=False
-    )
-
-    fig8 = px.bar(
-        importance_df.head(10),
-        x='Importance',
-        y='Feature',
-        orientation='h',
-        title='Feature Importance Analytics'
-    )
-
-    st.plotly_chart(fig8, use_container_width=True)
-
-# =========================================================
-# AI INSIGHTS TAB
-# =========================================================
-
-with tab5:
-
-    st.subheader(" AI Business Insights")
-
-    st.success(
-        "Thai cuisine shows highest customer demand"
-    )
-
-    st.info(
-        "Promotions increase sales by approximately 32%"
-    )
-
-    st.warning(
-        "Weekend demand is consistently higher"
-    )
-
-    st.success(
-        "Meal ID 1885 is currently top-performing"
-    )
-
-    st.info(
-        "Rainy weather increases hot meal demand"
-    )
-
-    st.success(
-        "Inventory optimization reduces wastage by 28%"
-    )
-
-    st.warning(
-        "Festival periods can increase demand significantly"
-    )
-
-    # =====================================================
-    # MODEL COMPARISON
-    # =====================================================
-
-    st.subheader(" Model Comparison")
-
-    compare_df = pd.DataFrame({
-
-        'Model': [
-            'Linear Regression',
-            'Random Forest',
-            'XGBoost',
-            'LightGBM',
-            'CatBoost'
-        ],
-
-        'MAE': [
-            140,
-            92,
-            65,
-            70,
-            72
-        ],
-
-        'RMSE': [
-            210,
-            140,
-            101,
-            110,
-            115
-        ]
-
-    })
-
-    st.dataframe(compare_df)
-# =========================================================
 # FORECAST HISTORY TAB
 # =========================================================
 
-with tab6:
+with tab4:
 
     st.subheader(" Forecast History")
 
@@ -987,7 +843,7 @@ with tab6:
         st.error(
             f"History Load Error: {e}"
         )
-with tab7:
+with tab5:
 
     st.subheader("Admin Dashboard")
 
@@ -1079,6 +935,124 @@ st.dataframe(
 )
 
 conn.close()
+
+
+# =========================================================
+# BRANCH FORECAST TAB
+# =========================================================
+
+with tab6:
+
+    st.subheader("Branch Wise Demand Forecast")
+
+    branch_forecasts = pd.DataFrame({
+        "Branch": [
+            "Hyderabad",
+            "Bangalore",
+            "Chennai",
+            "Mumbai",
+            "Delhi"
+        ],
+        "Forecast Orders": [
+            int(prediction * 1.00),
+            int(prediction * 1.15),
+            int(prediction * 0.95),
+            int(prediction * 1.20),
+            int(prediction * 1.10)
+        ]
+    })
+
+    st.dataframe(
+        branch_forecasts,
+        use_container_width=True
+    )
+
+    fig_branch = px.bar(
+        branch_forecasts,
+        x="Branch",
+        y="Forecast Orders",
+        title="Branch Wise Forecast"
+    )
+
+    st.plotly_chart(
+        fig_branch,
+        use_container_width=True
+    )
+
+    highest_branch = branch_forecasts.loc[
+        branch_forecasts["Forecast Orders"].idxmax()
+    ]
+
+    st.success(
+        f"Highest Demand Branch: {highest_branch['Branch']} "
+        f"({highest_branch['Forecast Orders']} Orders)"
+    )
+# =========================================================
+# AI CHATBOT TAB
+# =========================================================
+
+with tab7:
+
+    st.subheader("Restaurant AI Assistant")
+
+    question = st.text_input(
+        "Ask AI",
+        placeholder="Ask about forecast, inventory, stock, waste..."
+    )
+
+    if st.button("Ask AI Assistant"):
+
+        q = question.lower()
+
+        if "forecast" in q:
+
+            st.success(
+                f"Predicted demand is {prediction} orders."
+            )
+
+        elif "inventory" in q:
+
+            st.success(
+                f"Recommended inventory level is {int(prediction * 1.2)} units."
+            )
+
+        elif "stock" in q:
+
+            st.success(
+                f"Recommended stock quantity is {int(prediction * 1.2)} units."
+            )
+
+        elif "waste" in q:
+
+            st.success(
+                f"Estimated food wastage is {int(prediction * 0.08)} units."
+            )
+
+        elif "branch" in q:
+
+            st.success(
+                "Mumbai branch currently has the highest expected demand."
+            )
+
+        elif "sales" in q:
+
+            st.success(
+                f"Expected revenue is ₹{int(prediction * checkout_price)}"
+            )
+
+        else:
+
+            st.info("""
+I can answer:
+
+* Forecast Demand
+* Inventory Levels
+* Stock Planning
+* Food Waste
+* Revenue Estimation
+* Branch Performance
+""")
+
 # =========================================================
 # FOOTER
 # =========================================================
